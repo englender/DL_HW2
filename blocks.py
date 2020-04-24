@@ -75,10 +75,10 @@ class Linear(Block):
 
         # TODO: Create the weight matrix (w) and bias vector (b).
         # ====== YOUR CODE: ======
-        self.w = torch.randn(size=(out_features, in_features))*wstd
-        self.b = torch.randn(size=(1, out_features))*wstd
-        # self.w = torch.normal(mean=0, std=wstd, size=(out_features, in_features))
-        # self.b = torch.ones(size=(1, out_features))
+        # self.w = torch.randn(size=(out_features, in_features))*wstd
+        # self.b = torch.randn(size=(1, out_features))*wstd
+        self.w = torch.normal(mean=0, std=wstd, size=(out_features, in_features))
+        self.b = torch.ones(size=(1, out_features))
         # ========================
 
         self.dw = torch.zeros_like(self.w)
@@ -201,10 +201,10 @@ class Sigmoid(Block):
         #  Save whatever you need into
         #  grad_cache.
         # ====== YOUR CODE: ======
-        # exp = torch.exp(-x)
-        # ones = torch.ones_like(x)
-        # out = torch.div(ones, ones + exp)
-        out = torch.sigmoid(x)
+        exp = torch.exp(-x)
+        ones = torch.ones_like(x)
+        out = torch.div(ones, ones + exp)
+        # out = torch.sigmoid(x)
         # ========================
 
         return out
@@ -218,7 +218,7 @@ class Sigmoid(Block):
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
         ones = torch.ones_like(dout)
-        dx = dout*(ones - dout)
+        dx = dout * (self.forward(dout) * (ones - self.forward(dout)))
         # ========================
 
         return dx
@@ -262,7 +262,11 @@ class CrossEntropyLoss(Block):
         #  Tip: to get a different column from each row of a matrix tensor m,
         #  you can index it with m[range(num_rows), list_of_cols].
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x_y = x[range(N), y]
+        exp = torch.exp(x)
+        sum = torch.sum(exp, dim=1)
+        log = torch.log(sum)
+        loss = torch.sum(log - x_y) / N
         # ========================
 
         self.grad_cache['x'] = x
@@ -281,7 +285,12 @@ class CrossEntropyLoss(Block):
 
         # TODO: Calculate the gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        exp = torch.exp(x)
+        sum_rows = torch.sum(exp, dim=1)
+        q = (sum_rows.repeat(x.shape[1], 1)).t()
+        dx = exp / q
+        dx[range(N), y] -= 1
+        dx = (dout * dx) / N
         # ========================
 
         return dx
@@ -340,7 +349,9 @@ class Sequential(Block):
         # TODO: Implement the forward pass by passing each block's output
         #  as the input of the next.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in self.blocks:
+            out = block.forward(x, **kw)
+            x = out
         # ========================
 
         return out
@@ -352,7 +363,9 @@ class Sequential(Block):
         #  Each block's input gradient should be the previous block's output
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in reversed(self.blocks):
+            din = block.backward(dout)
+            dout = din
         # ========================
 
         return din
@@ -362,7 +375,13 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in self.blocks:
+            params += block.params()
+        #     if len(block.params()) > 0:
+        #         params.append(block.params()[0])
+        #         params.append(block.params()[1])
+        # params_list = [block.params() for block in self.blocks]
+        # params = [tup for p_list in params_list for tup in p_list]
         # ========================
 
         return params

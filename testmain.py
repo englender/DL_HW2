@@ -51,3 +51,43 @@ if __name__ == '__main__':
 
     # Test backward pass
     test_block_grad(sigmoid, x_test)
+
+    # # Test CrossEntropy
+    cross_entropy = blocks.CrossEntropyLoss()
+    scores = torch.randn(N, num_classes)
+    labels = torch.randint(low=0, high=num_classes, size=(N,), dtype=torch.long)
+
+    # Test forward pass
+    loss = cross_entropy(scores, labels)
+    expected_loss = torch.nn.functional.cross_entropy(scores, labels)
+    test.assertLess(torch.abs(expected_loss - loss).item(), 1e-5)
+    print('loss=', loss.item())
+
+    # Test backward pass
+    test_block_grad(cross_entropy, scores, y=labels)
+
+    # Test Sequential
+    # Let's create a long sequence of blocks and see
+    # whether we can compute end-to-end gradients of the whole thing.
+
+    seq = blocks.Sequential(
+        blocks.Linear(in_features, 100),
+        blocks.Linear(100, 200),
+        blocks.Linear(200, 100),
+        blocks.ReLU(),
+        blocks.Linear(100, 500),
+        blocks.Linear(500, 200),
+        blocks.ReLU(),
+        blocks.Linear(200, 500),
+        blocks.ReLU(),
+        blocks.Linear(500, 1),
+        blocks.Sigmoid(),
+    )
+    x_test = torch.randn(N, in_features)
+
+    # Test forward pass
+    z = seq(x_test)
+    test.assertSequenceEqual(z.shape, [N, 1])
+
+    # Test backward pass
+    test_block_grad(seq, x_test)
