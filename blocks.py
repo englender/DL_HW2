@@ -125,8 +125,8 @@ class Linear(Block):
         #  You should accumulate gradients in dw and db.
         # ====== YOUR CODE: ======
         dx = torch.mm(dout, self.w)
-        self.dw = torch.mm(torch.t(dout), x)
-        self.db = torch.sum(dout, dim=0)
+        self.dw += torch.mm(torch.t(dout), x)
+        self.db += torch.sum(dout, dim=0)
         # ========================
 
         return dx
@@ -289,7 +289,7 @@ class CrossEntropyLoss(Block):
         # ====== YOUR CODE: ======
         exp = torch.exp(x)
         sum_rows = torch.sum(exp, dim=1)
-        q = (sum_rows.repeat(x.shape[1], 1)).t()
+        q = sum_rows.repeat(x.shape[1], 1).t()
         dx = exp / q
         dx[range(N), y] -= 1
         dx = (dout * dx) / N
@@ -316,7 +316,14 @@ class Dropout(Block):
         #  Notice that contrary to previous blocks, this block behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        r = torch.randint(low=0, high=1)
+        self.activation = None
+        if r >= self.p:
+            self.activation = ReLU()
+            out = self.activation.forward(x,kw)
+        else:
+            out = x
+
         # ========================
 
         return out
@@ -324,7 +331,10 @@ class Dropout(Block):
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        if self.activation:
+            dx = self.activation.backward(dout)
+        else:
+            dx = dout
         # ========================
 
         return dx
@@ -434,7 +444,13 @@ class MLP(Block):
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        activation_classes = {'relu': ReLU, 'sigmoid': Sigmoid}
+        # activation_drop_classes = {'relu': Dropout, 'sigmoid': Sigmoid}
+        for dim in hidden_features:
+            blocks.append(Linear(in_features,dim))
+            blocks.append(activation_classes[activation]())
+            in_features=dim
+        blocks.append(Linear(in_features,num_classes))
         # ========================
 
         self.sequence = Sequential(*blocks)

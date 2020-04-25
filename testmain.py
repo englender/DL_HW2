@@ -91,3 +91,36 @@ if __name__ == '__main__':
 
     # Test backward pass
     test_block_grad(seq, x_test)
+
+    # Test MLP architecture
+    N = 100
+    in_features = 10
+    num_classes = 10
+    for activation in ('relu', 'sigmoid'):
+        mlp = blocks.MLP(in_features, num_classes, hidden_features=[100, 50, 100], activation=activation)
+        test.assertEqual(len(mlp.sequence), 7)
+
+        num_linear = 0
+        for b1, b2 in zip(mlp.sequence, mlp.sequence[1:]):
+            if (str(b2).lower() == activation):
+                test.assertTrue(str(b1).startswith('Linear'))
+                num_linear += 1
+
+        test.assertTrue(str(mlp.sequence[-1]).startswith('Linear'))
+        test.assertEqual(num_linear, 3)
+
+        # Test MLP gradients
+        # Test forward pass
+        x_test = torch.randn(N, in_features)
+        labels = torch.randint(low=0, high=num_classes, size=(N,), dtype=torch.long)
+        z = mlp(x_test)
+        test.assertSequenceEqual(z.shape, [N, num_classes])
+
+        # Create a sequence of MLPs and CE loss
+        seq_mlp = blocks.Sequential(mlp, blocks.CrossEntropyLoss())
+        loss = seq_mlp(x_test, y=labels)
+        test.assertEqual(loss.dim(), 0)
+        print(f'MLP loss={loss}, activation={activation}')
+
+        # Test backward pass
+        test_block_grad(seq_mlp, x_test, y=labels)
