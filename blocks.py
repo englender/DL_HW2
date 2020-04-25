@@ -75,10 +75,12 @@ class Linear(Block):
 
         # TODO: Create the weight matrix (w) and bias vector (b).
         # ====== YOUR CODE: ======
-        # self.w = torch.randn(size=(out_features, in_features))*wstd
-        # self.b = torch.randn(size=(1, out_features))*wstd
-        self.w = torch.normal(mean=0, std=wstd, size=(out_features, in_features))
-        self.b = torch.ones(size=(1, out_features))
+        # self.w = torch.rand((out_features,in_features))
+        # self.b = torch.rand(out_features)
+        self.w = torch.randn(size=(out_features, in_features))*wstd
+        self.b = torch.randn(size=(1, out_features))*wstd
+        # self.w = torch.normal(mean=0, std=wstd, size=(out_features, in_features))
+        # self.b = torch.ones(size=(1, out_features))
         # ========================
 
         self.dw = torch.zeros_like(self.w)
@@ -152,7 +154,6 @@ class ReLU(Block):
         # TODO: Implement the ReLU operation.
         # ====== YOUR CODE: ======
         zeros = torch.zeros_like(x)
-        # out = torch.max(x, zeros)
         out = torch.where(x > 0, x, zeros)
         # ========================
 
@@ -204,7 +205,7 @@ class Sigmoid(Block):
         exp = torch.exp(-x)
         ones = torch.ones_like(x)
         out = torch.div(ones, ones + exp)
-        # out = torch.sigmoid(x)
+        self.grad_cache['x'] = x
         # ========================
 
         return out
@@ -217,8 +218,9 @@ class Sigmoid(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
+        x = self.grad_cache['x']
         ones = torch.ones_like(dout)
-        dx = dout * (self.forward(dout) * (ones - self.forward(dout)))
+        dx = dout * (self.forward(x) * (ones - self.forward(x)))
         # ========================
 
         return dx
