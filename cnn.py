@@ -46,23 +46,19 @@ class ConvClassifier(nn.Module):
         #  CONV->ReLUs should exist at the end, without a MaxPool after them.
         # ====== YOUR CODE: ======
         max_pool_count = 0
-        num_features_h = in_h
-        num_features_w = in_w
         for channel in self.channels:
             layers.append(nn.Conv2d(in_channels=in_channels, out_channels=channel, kernel_size=3, padding=1))
             layers.append(nn.ReLU())        # TODO: if its ok to use nn.ReLu
             in_channels = channel
             max_pool_count += 1
 
-            # num_features_h-=2
-            # num_features_w-=2
-
             if max_pool_count == self.pool_every:
                 layers.append(nn.MaxPool2d(kernel_size=2))
                 max_pool_count = 0
-                num_features_h = int(num_features_h/2)
-                num_features_w = int(num_features_w/2)
-        self.num_features = num_features_h*num_features_w
+                in_h = int(in_h/2)
+                in_w = int(in_w/2)
+                self.in_size = in_channels, in_h, in_w
+
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -77,8 +73,8 @@ class ConvClassifier(nn.Module):
         #  the first linear layer.
         #  The last Linear layer should have an output dim of out_classes.
         # ====== YOUR CODE: ======
-        in_features = self.num_features*self.channels[-1]
-        # in_features = 15488
+        in_features = (in_channels*in_h*in_w)
+
         for dim in self.hidden_dims:
             layers.append(nn.Linear(in_features, dim))
             layers.append(nn.ReLU())
@@ -94,11 +90,14 @@ class ConvClassifier(nn.Module):
         #  Extract features from the input, run the classifier on them and
         #  return class scores.
         # ====== YOUR CODE: ======
-        feature_extractor_seq = self.feature_extractor
-        classifier_seq = self.classifier
-
-        extractor_out = feature_extractor_seq.forward(x)
-        out = classifier_seq.forward(extractor_out)
+        # feature_extractor_seq = self.feature_extractor
+        # classifier_seq = self.classifier
+        #
+        # extractor_out = feature_extractor_seq.forward(x)
+        # out = classifier_seq.forward(extractor_out)
+        features = self.feature_extractor(x)
+        features = features.view(features.size(0), -1)
+        out = self.classifier(features)
         # ========================
         return out
 
