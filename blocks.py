@@ -316,11 +316,20 @@ class Dropout(Block):
         #  Notice that contrary to previous blocks, this block behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-        r = torch.randint(low=0, high=1)
-        self.activation = None
-        if r >= self.p:
-            self.activation = ReLU()
-            out = self.activation.forward(x,kw)
+        # r = torch.rand(size=(1, 1))
+        # self.activation = False
+        # if r >= self.p:
+        #     out = x
+        #     self.activation = True
+        # else:
+        #     out = torch.zeros_like(x)
+            # self.activation = ReLU()
+            # out = self.activation.forward(x,kw)
+
+        if self.training_mode:
+            prob = torch.distributions.bernoulli.Bernoulli(probs=self.p)
+            self.mask = prob.sample(x.size())
+            out = (x * self.mask)
         else:
             out = x
 
@@ -331,8 +340,12 @@ class Dropout(Block):
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
         # ====== YOUR CODE: ======
-        if self.activation:
-            dx = self.activation.backward(dout)
+        # if self.activation:
+        #     dx = dout
+        # else:
+        #     dx = torch.zeros_like(dout)
+        if self.training_mode:
+            dx = dout * self.mask
         else:
             dx = dout
         # ========================
@@ -445,10 +458,11 @@ class MLP(Block):
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
         activation_classes = {'relu': ReLU, 'sigmoid': Sigmoid}
-        # activation_drop_classes = {'relu': Dropout, 'sigmoid': Sigmoid}
         for dim in hidden_features:
             blocks.append(Linear(in_features,dim))
             blocks.append(activation_classes[activation]())
+            if dropout:
+                blocks.append(Dropout(dropout))
             in_features=dim
         blocks.append(Linear(in_features,num_classes))
         # ========================

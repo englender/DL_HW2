@@ -11,6 +11,7 @@ import hw2.blocks as blocks
 import hw2.answers as answers
 from torch.utils.data import DataLoader
 from cs236781.plot import plot_fit
+from hw2.grad_compare import compare_block_to_torch
 
 seed = 42
 plt.rcParams.update({'font.size': 12})
@@ -92,8 +93,8 @@ def train_with_optimizer(opt_name, opt_class, fig):
     trainer = training.BlocksTrainer(model, loss_fn, optimizer)
     fit_res = trainer.fit(dl_train, dl_test, num_epochs, max_batches=max_batches)
 
-    fig, axes = plot_fit(fit_res, fig=fig, legend=opt_name)
-    return fig
+    # fig, axes = plot_fit(fit_res, fig=fig, legend=opt_name)
+    # return fig
 
 fig_optim = None
 # fig_optim = train_with_optimizer('vanilla', optimizers.VanillaSGD, fig_optim)
@@ -101,5 +102,26 @@ fig_optim = None
 # fig_optim = train_with_optimizer('momentum', optimizers.MomentumSGD, fig_optim)
 # fig_optim
 
-fig_optim = train_with_optimizer('rmsprop', optimizers.RMSProp, fig_optim)
-fig_optim
+# fig_optimim = train_with_optimizer('rmsprop', optimizers.RMSProp, fig_optim)
+# fig_optim
+
+
+# Check architecture of MLP with dropout layers
+mlp_dropout = blocks.MLP(in_features, num_classes, [50]*3, dropout=0.6)
+print(mlp_dropout)
+test.assertEqual(len(mlp_dropout.sequence), 10)
+for b1, b2 in zip(mlp_dropout.sequence, mlp_dropout.sequence[1:]):
+    if str(b1) == 'relu':
+        test.assertTrue(str(b2).startswith('Dropout'))
+test.assertTrue(str(mlp_dropout.sequence[-1]).startswith('Linear'))
+
+# Test end-to-end gradient in train and test modes.
+print('Dropout, train mode')
+mlp_dropout.train(True)
+for diff in compare_block_to_torch(mlp_dropout, torch.randn(500, in_features)):
+    test.assertLess(diff, 1e-3)
+
+print('Dropout, test mode')
+mlp_dropout.train(False)
+for diff in compare_block_to_torch(mlp_dropout, torch.randn(500, in_features)):
+    test.assertLess(diff, 1e-3)
