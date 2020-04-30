@@ -41,14 +41,26 @@ def part2_dropout_hp():
     # TODO: Tweak the hyperparameters to get the model to overfit without
     # dropout.
     # ====== YOUR CODE: ======
-    wstd = 0.05
-    lr = 0.005
+    wstd = 0.005
+    lr = 0.001
     # ========================
     return dict(wstd=wstd, lr=lr)
 
 
 part2_q1 = r"""
-**Your answer:**
+**Your answer: 
+1. The graphs that were computed for the three dropout configurations match our expectations. We can see in the graphs
+that the model with no dropout clearly overfits on the train data (ie. the train loss is very low but the test loss 
+is high), as expected. On the other hand, when adding a dropout we can see that although the train loss with dropout is 
+higher than the train loss with no dropout, the test loss acts differently, and the test loss with dropout is lower 
+than the test loss without dropout. This observation indicates an improvement of the generalization of the model when 
+dropout is added, which correlates with the goal of the dropout.
+2. We can see in the graphs computed for the low-dropout setting and high-dropout setting that the low-dropout setting
+achieves better accuracy with the test-set. This is due to underfitting of the model with high-dropout, the high-dropout 
+model drops too many neurons which can reduce the efficiency of the training process. We can learn from our results that
+using dropout can improve the overfit of the model, however too big of a dropout can cause the opposite reaction 
+(underfit).      
+**
 
 
 Write your answer using **markdown** and $\LaTeX$:

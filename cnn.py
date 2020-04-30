@@ -142,7 +142,25 @@ class ResidualBlock(nn.Module):
         #  - Don't create layers which you don't use. This will prevent
         #    correct comparison in the test.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        layers1 = []
+        orig_in_channel = in_channels
+        for index, channel in enumerate(channels[:-1]):
+            layers1.append(nn.Conv2d(in_channels=in_channels, out_channels=channel, kernel_size=kernel_sizes[index],
+                                     padding=int((kernel_sizes[index] - 1)/2), bias=True))
+            if dropout:
+                layers1.append(nn.Dropout2d(dropout))
+            if batchnorm:
+                layers1.append(nn.BatchNorm2d(num_features=channel))
+            layers1.append(nn.ReLU())
+            in_channels = channel
+
+        layers1.append(nn.Conv2d(in_channels=in_channels, out_channels=channels[-1], kernel_size=kernel_sizes[-1],
+                                 padding=int((kernel_sizes[-1] - 1)/2), bias=True))
+        self.main_path = nn.Sequential(*layers1)
+        if orig_in_channel != channels[-1]:
+            self.shortcut_path = nn.Sequential(nn.Conv2d(orig_in_channel, out_channels=channels[-1], bias=False, kernel_size=1))
+        else:
+            self.shortcut_path = nn.Sequential()
         # ========================
 
     def forward(self, x):
@@ -173,7 +191,25 @@ class ResNetClassifier(ConvClassifier):
         #    without a MaxPool after them.
         #  - Use your ResidualBlock implemetation.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # num_iterations = int(len(self.channels) / self.pool_every)
+        num_iterations, last_iteration = divmod(len(self.channels), self.pool_every)
+        new_channels_list = [self.channels[i:i+self.pool_every] for i in range(num_iterations)]
+
+        for channels_list in new_channels_list:
+            layers.append(ResidualBlock(in_channels=in_channels, channels=channels_list, kernel_sizes=[3]*self.pool_every,
+                                        batchnorm=False, dropout=0))
+            layers.append(nn.ReLU())        # Todo: check if needed
+            in_channels = channels_list[-1]
+            layers.append(nn.MaxPool2d(kernel_size=2))
+            in_h = int(in_h / 2)
+            in_w = int(in_w / 2)
+            self.in_size = in_channels, in_h, in_w
+
+        if last_iteration:
+            index = len(self.channels) - last_iteration
+            layers.append(ResidualBlock(in_channels=in_channels, channels=self.channels[index:],
+                                        kernel_sizes=[3]*last_iteration, batchnorm=False, dropout=0))
+            layers.append(nn.ReLU())        # Todo: check if needed
         # ========================
         seq = nn.Sequential(*layers)
         return seq
