@@ -193,12 +193,22 @@ class ResNetClassifier(ConvClassifier):
         # ====== YOUR CODE: ======
         # num_iterations = int(len(self.channels) / self.pool_every)
         num_iterations, last_iteration = divmod(len(self.channels), self.pool_every)
-        new_channels_list = [self.channels[i:i+self.pool_every] for i in range(num_iterations)]
+        new_channels_list = []
+        index = 0
+        tmp_list = []
+        for ch in self.channels:
+           tmp_list.append(ch)
+           index += 1
+           if index == self.pool_every:
+               new_channels_list.append(tmp_list)
+               tmp_list = []
+               index = 0
+            # [self.channels[i:i+self.pool_every] for i in range(num_iterations)]
 
         for channels_list in new_channels_list:
             layers.append(ResidualBlock(in_channels=in_channels, channels=channels_list, kernel_sizes=[3]*self.pool_every,
                                         batchnorm=False, dropout=0))
-            layers.append(nn.ReLU())        # Todo: check if needed
+            # layers.append(nn.ReLU())        # Todo: check if needed
             in_channels = channels_list[-1]
             layers.append(nn.MaxPool2d(kernel_size=2))
             in_h = int(in_h / 2)
@@ -209,7 +219,7 @@ class ResNetClassifier(ConvClassifier):
             index = len(self.channels) - last_iteration
             layers.append(ResidualBlock(in_channels=in_channels, channels=self.channels[index:],
                                         kernel_sizes=[3]*last_iteration, batchnorm=False, dropout=0))
-            layers.append(nn.ReLU())        # Todo: check if needed
+            # layers.append(nn.ReLU())        # Todo: check if needed
         # ========================
         seq = nn.Sequential(*layers)
         return seq

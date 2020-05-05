@@ -98,7 +98,23 @@ An equation: $e^{i\pi} -1 = 0$
 # Part 3 answers
 
 part3_q1 = r"""
-**Your answer:**
+
+Explain the effect of depth on the accuracy. What depth produces the best results and why do you think that's the case?
+Were there values of L for which the network wasn't trainable? what causes this? Suggest two things which may be done to resolve it at least partially.
+
+
+**Your answer:
+1. We can see in our results that for 32 filters (K=32) we produce the best accuracy when the depth is 2, and the worst
+accuracy when the depth is 16. Similarly for 64 filters (K=64) we produce the best accuracy when the depth is 4, and
+the worst accuracy is when the depth is 16. Meaning for both filters we get better results from the lower depths rather
+than the higher depths. As we saw in the tutorial, adding depth can cause problems just like we experienced in our 
+results. A large depth can cause the gradient to vanish or explode on the back propagation by the time it reaches layers 
+close to the input model.
+
+2. Originally we ran the experiment and we found that for K=64, L=16 the network wasn't trainable. We suspected this was
+happening because the progression towards the gradient direction was too big, and always passed the minimum point. This
+assumption was verified when we decreased the learn rate by half and the loss started to decrease as well as the 
+accuracy improved. That being said, we still produced lesser results with L=16.**
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -111,7 +127,23 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part3_q2 = r"""
-**Your answer:**
+
+Analyze your results from experiment 1.2. In particular, compare to the results of experiment 1.1.
+
+**Your answer:
+In experiment 1.2 for L=2, we can see that the best results are produced for K=128, followed closely by K=64,256 which
+are very similar, and the lowest accuracy is when K=32. In experiment 1.1 we ran the same settings for K=32,64 and 
+as expected the accuracy percentage are the same in both experiments for these parameters. Following these results we 
+conclude that for L=2 the best number of filters is K=128, a setting that wasn't checked in experiment 1.1
+
+For L=4, we produce similar results as L=2, but we achieve a higher accuracy. The best results are produced for 
+K=128,256, followed by K=64 and the lowest accuracy is when K=32. Like with L=2, the accuracy percentage are the same 
+as in experiment 1.1 for K=32,64. 
+
+For L=8, we produce the best results for K=258, and as the K drops so does the accuracy.
+
+From experiments 1.1,1.2 we can conclude that there is a linear relation between the K and L, so as the L increases we
+produce better results for an increasing K.**
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -124,6 +156,9 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part3_q3 = r"""
+
+Analyze your results from experiment 1.3
+
 **Your answer:**
 
 

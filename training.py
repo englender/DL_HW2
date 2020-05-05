@@ -18,6 +18,7 @@ class Trainer(abc.ABC):
     - Single epoch (train_epoch/test_epoch)
     - Single batch (train_batch/test_batch)
     """
+
     def __init__(self, model, loss_fn, optimizer, device=None):
         """
         Initialize the trainer.
@@ -60,9 +61,9 @@ class Trainer(abc.ABC):
 
         for epoch in range(num_epochs):
             verbose = False  # pass this to train/test_epoch.
-            if epoch % print_every == 0 or epoch == num_epochs-1:
+            if epoch % print_every == 0 or epoch == num_epochs - 1:
                 verbose = True
-            self._print(f'--- EPOCH {epoch+1}/{num_epochs} ---', verbose)
+            self._print(f'--- EPOCH {epoch + 1}/{num_epochs} ---', verbose)
 
             # TODO: Train & evaluate for one epoch
             #  - Use the train/test_epoch methods.
@@ -73,20 +74,24 @@ class Trainer(abc.ABC):
             #    save the model to the file specified by the checkpoints
             #    argument.
             # ====== YOUR CODE: ======
-            res_train = self.train_epoch(dl_train,verbose=verbose, **kw)
-            res_test = self.test_epoch(dl_test,verbose=verbose, **kw)
-            if early_stopping and best_acc:
-                if res_test[1] < best_acc:
-                    epochs_without_improvement+=1
+            res_train = self.train_epoch(dl_train, verbose=verbose, **kw)
+            res_test = self.test_epoch(dl_test, verbose=verbose, **kw)
+            # if not best_acc:
+            #     best_acc = res_test[1]
+            if early_stopping is not None:
+                if best_acc is None:
+                    best_acc = res_test[1]
+                elif res_test[1] <= best_acc:
+                    epochs_without_improvement += 1
                     if epochs_without_improvement >= early_stopping:
                         break
                 else:
-                    epochs_without_improvement=0
-                    best_acc=res_test[1]
+                    epochs_without_improvement = 0
+                    best_acc = res_test[1]
 
-            train_loss.append(sum(res_train[0])/len(res_train[0]))
+            train_loss.append(sum(res_train[0]).item() / len(res_train[0]))
             train_acc.append(res_train[1])
-            test_loss.append(sum(res_test[0])/len(res_test[0]))
+            test_loss.append(sum(res_test[0]).item() / len(res_test[0]))
             test_acc.append(res_test[1])
             # ========================
 
@@ -214,8 +219,8 @@ class BlocksTrainer(Trainer):
         self.optimizer.step()
 
         _, y_pred_indices = torch.max(y_pred, dim=1)
-        num_incorrect = len(torch.nonzero(y_pred_indices-y))
-        num_correct = X.shape[0]-num_incorrect
+        num_incorrect = len(torch.nonzero(y_pred_indices - y))
+        num_correct = X.shape[0] - num_incorrect
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -258,6 +263,9 @@ class TorchTrainer(Trainer):
         loss = self.loss_fn(y_pred, y)
 
         self.optimizer.zero_grad()
+        # classifier_grad = self.model.classifier.backward(self.loss_fn.backward())
+        # grad = self.model.feature_extractor.backward(classifier_grad)
+
         # grad = self.model.backward(self.loss_fn.backward())
         loss.backward()
         self.optimizer.step()
