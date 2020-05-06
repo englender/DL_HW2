@@ -236,5 +236,50 @@ class YourCodeNet(ConvClassifier):
     #  For example, add batchnorm, dropout, skip connections, change conv
     #  filter sizes etc.
     # ====== YOUR CODE: ======
-        pass
-    # ========================
+    def _make_feature_extractor(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        # TODO: Create the feature extractor part of the model:
+        #  [-> (CONV -> ReLU)*P -> MaxPool]*(N/P)
+        #   \------- SKIP ------/
+        #  Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
+        #  Pooling to reduce dimensions after every P convolutions.
+        #  Notes:
+        #  - If N is not divisible by P, then N mod P additional
+        #    CONV->ReLUs (with a skip over them) should exist at the end,
+        #    without a MaxPool after them.
+        #  - Use your ResidualBlock implemetation.
+        # ====== YOUR CODE: ======
+        # num_iterations = int(len(self.channels) / self.pool_every)
+        num_iterations, last_iteration = divmod(len(self.channels), self.pool_every)
+        new_channels_list = []
+        index = 0
+        tmp_list = []
+        for ch in self.channels:
+            tmp_list.append(ch)
+            index += 1
+            if index == self.pool_every:
+                new_channels_list.append(tmp_list)
+                tmp_list = []
+                index = 0
+            # [self.channels[i:i+self.pool_every] for i in range(num_iterations)]
+
+        for channels_list in new_channels_list:
+            layers.append(ResidualBlock(in_channels=in_channels, channels=channels_list, kernel_sizes=[3] * self.pool_every,
+                                        batchnorm=True, dropout=0.2))
+            # layers.append(nn.ReLU())        # Todo: check if needed
+            in_channels = channels_list[-1]
+            layers.append(nn.MaxPool2d(kernel_size=2))
+            in_h = int(in_h / 2)
+            in_w = int(in_w / 2)
+            self.in_size = in_channels, in_h, in_w
+
+        if last_iteration:
+            index = len(self.channels) - last_iteration
+            layers.append(ResidualBlock(in_channels=in_channels, channels=self.channels[index:],
+                                        kernel_sizes=[3] * last_iteration, batchnorm=True, dropout=0.2))
+            # layers.append(nn.ReLU())        # Todo: check if needed
+        # ========================
+        seq = nn.Sequential(*layers)
+        return seq

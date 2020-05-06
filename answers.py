@@ -109,12 +109,16 @@ accuracy when the depth is 16. Similarly for 64 filters (K=64) we produce the be
 the worst accuracy is when the depth is 16. Meaning for both filters we get better results from the lower depths rather
 than the higher depths. As we saw in the tutorial, adding depth can cause problems just like we experienced in our 
 results. A large depth can cause the gradient to vanish or explode on the back propagation by the time it reaches layers 
-close to the input model.
+close to the model input.
 
 2. Originally we ran the experiment and we found that for K=64, L=16 the network wasn't trainable. We suspected this was
 happening because the progression towards the gradient direction was too big, and always passed the minimum point. This
 assumption was verified when we decreased the learn rate by half and the loss started to decrease as well as the 
-accuracy improved. That being said, we still produced lesser results with L=16.**
+accuracy improved. That being said, we still produced lesser results with L=16.
+
+
+
+**
 
 
 Write your answer using **markdown** and $\LaTeX$:
