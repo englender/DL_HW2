@@ -26,9 +26,9 @@ def part2_optim_hp():
     # TODO: Tweak the hyperparameters to get the best results you can.
     # You may want to use different learning rates for each optimizer.
     # ====== YOUR CODE: ======
-    wstd = 0.01 #0.01
-    lr_vanilla =  0.02 #0.05
-    lr_momentum = 0.003 #0.01
+    wstd = 0.01
+    lr_vanilla = 0.02
+    lr_momentum = 0.003
     lr_rmsprop = 0.0003
     reg = 0.005
     # ========================
@@ -124,9 +124,6 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part3_q2 = r"""
-
-Analyze your results from experiment 1.2. In particular, compare to the results of experiment 1.1.
-
 **Your answer:
 In experiment 1.2 for L=2, we produce similar results for all the K values. This can be explained by the low depth of 
 the network which causes the feature extraction to be simpler and thus decreasing the affect of different K values.
@@ -137,7 +134,7 @@ is deep thus causing the gradiant to vanish as we explained before.
 In conclusion, when using more filters more diverse features can be extracted, and by making the network deeper the 
 features can be more complex. As seen in our results for a low L value the network isn't deep enough to extract more 
 complex features derived by a large K value.
-.**
+**
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -150,9 +147,6 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part3_q3 = r"""
-
-Analyze your results from experiment 1.3
-
 **Your answer:
 This experiment is the first time we use several different convolutions for every layer (L). Also we can observe that in 
 this experiment we achieve our highest test accuracy. For every L value we have several convolutional layers, the first 
@@ -181,8 +175,7 @@ In the second part where we trained with different convulotional layers, we expi
 ResNet model we achieved better results, and where able to train the network with large depths, as opposed to the CNN
 model that wasn't trainable with those depths.
 These results are consistent with our expectations, the ResNet model enables the gradient to propagate back from deeper
-layers and because of that we can build more complex features resulting in better results.
-  
+layers and because of that we can build more complex features resulting in better results. 
 **
 
 
@@ -207,7 +200,8 @@ dropout=0.2, which is smaller than the values used in part 2.
 2. As we expected these additions produced better results than in part 1. We achieved better generalization as
 well as higher accuracy. In part 1 we saw from both the CNN model and ResNet model some overfitting, that is reflected
 by the improvement of the train accuracy and decrease in the test accuracy. Moreover in part 2 we train the model with 
-large depths and still produce high accuracy, as opposed to part 1 where the models didn't train with these large depths.**
+large depths and still produce high accuracy, as opposed to part 1 where the models didn't train with these large depths.
+**
 
 
 Write your answer using **markdown** and $\LaTeX$:

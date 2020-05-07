@@ -76,8 +76,7 @@ class Trainer(abc.ABC):
             # ====== YOUR CODE: ======
             res_train = self.train_epoch(dl_train, verbose=verbose, **kw)
             res_test = self.test_epoch(dl_test, verbose=verbose, **kw)
-            # if not best_acc:
-            #     best_acc = res_test[1]
+
             if early_stopping is not None:
                 if best_acc is None:
                     best_acc = res_test[1]
@@ -208,8 +207,6 @@ class BlocksTrainer(Trainer):
         #  - Optimize params
         #  - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        # self.model.train()
-
         y_pred = self.model.forward(X)
         loss = self.loss_fn.forward(y_pred, y)
 
@@ -263,10 +260,6 @@ class TorchTrainer(Trainer):
         loss = self.loss_fn(y_pred, y)
 
         self.optimizer.zero_grad()
-        # classifier_grad = self.model.classifier.backward(self.loss_fn.backward())
-        # grad = self.model.feature_extractor.backward(classifier_grad)
-
-        # grad = self.model.backward(self.loss_fn.backward())
         loss.backward()
         self.optimizer.step()
 

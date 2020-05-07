@@ -75,12 +75,8 @@ class Linear(Block):
 
         # TODO: Create the weight matrix (w) and bias vector (b).
         # ====== YOUR CODE: ======
-        # self.w = torch.rand((out_features,in_features))
-        # self.b = torch.rand(out_features)
         self.w = torch.randn(size=(out_features, in_features))*wstd
         self.b = torch.randn(size=(1, out_features))*wstd
-        # self.w = torch.normal(mean=0, std=wstd, size=(out_features, in_features))
-        # self.b = torch.ones(size=(1, out_features))
         # ========================
 
         self.dw = torch.zeros_like(self.w)
@@ -322,7 +318,6 @@ class Dropout(Block):
             out = (x * self.mask)
         else:
             out = (1-self.p) * x
-
         # ========================
 
         return out
@@ -388,11 +383,6 @@ class Sequential(Block):
         # ====== YOUR CODE: ======
         for block in self.blocks:
             params += block.params()
-        #     if len(block.params()) > 0:
-        #         params.append(block.params()[0])
-        #         params.append(block.params()[1])
-        # params_list = [block.params() for block in self.blocks]
-        # params = [tup for p_list in params_list for tup in p_list]
         # ========================
 
         return params
