@@ -90,11 +90,6 @@ class ConvClassifier(nn.Module):
         #  Extract features from the input, run the classifier on them and
         #  return class scores.
         # ====== YOUR CODE: ======
-        # feature_extractor_seq = self.feature_extractor
-        # classifier_seq = self.classifier
-        #
-        # extractor_out = feature_extractor_seq.forward(x)
-        # out = classifier_seq.forward(extractor_out)
         features = self.feature_extractor(x)
         features = features.view(features.size(0), -1)
         out = self.classifier(features)
@@ -191,7 +186,6 @@ class ResNetClassifier(ConvClassifier):
         #    without a MaxPool after them.
         #  - Use your ResidualBlock implemetation.
         # ====== YOUR CODE: ======
-        # num_iterations = int(len(self.channels) / self.pool_every)
         num_iterations, last_iteration = divmod(len(self.channels), self.pool_every)
         new_channels_list = []
         index = 0
@@ -203,12 +197,10 @@ class ResNetClassifier(ConvClassifier):
                new_channels_list.append(tmp_list)
                tmp_list = []
                index = 0
-            # [self.channels[i:i+self.pool_every] for i in range(num_iterations)]
 
         for channels_list in new_channels_list:
             layers.append(ResidualBlock(in_channels=in_channels, channels=channels_list, kernel_sizes=[3]*self.pool_every,
                                         batchnorm=False, dropout=0))
-            # layers.append(nn.ReLU())        # Todo: check if needed
             in_channels = channels_list[-1]
             layers.append(nn.MaxPool2d(kernel_size=2))
             in_h = int(in_h / 2)
@@ -219,7 +211,6 @@ class ResNetClassifier(ConvClassifier):
             index = len(self.channels) - last_iteration
             layers.append(ResidualBlock(in_channels=in_channels, channels=self.channels[index:],
                                         kernel_sizes=[3]*last_iteration, batchnorm=False, dropout=0))
-            # layers.append(nn.ReLU())        # Todo: check if needed
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -251,7 +242,6 @@ class YourCodeNet(ConvClassifier):
         #    without a MaxPool after them.
         #  - Use your ResidualBlock implemetation.
         # ====== YOUR CODE: ======
-        # num_iterations = int(len(self.channels) / self.pool_every)
         num_iterations, last_iteration = divmod(len(self.channels), self.pool_every)
         new_channels_list = []
         index = 0
@@ -263,12 +253,10 @@ class YourCodeNet(ConvClassifier):
                 new_channels_list.append(tmp_list)
                 tmp_list = []
                 index = 0
-            # [self.channels[i:i+self.pool_every] for i in range(num_iterations)]
 
         for channels_list in new_channels_list:
             layers.append(ResidualBlock(in_channels=in_channels, channels=channels_list, kernel_sizes=[3] * self.pool_every,
                                         batchnorm=True, dropout=0.2))
-            # layers.append(nn.ReLU())        # Todo: check if needed
             in_channels = channels_list[-1]
             layers.append(nn.MaxPool2d(kernel_size=2))
             in_h = int(in_h / 2)
@@ -279,7 +267,6 @@ class YourCodeNet(ConvClassifier):
             index = len(self.channels) - last_iteration
             layers.append(ResidualBlock(in_channels=in_channels, channels=self.channels[index:],
                                         kernel_sizes=[3] * last_iteration, batchnorm=True, dropout=0.2))
-            # layers.append(nn.ReLU())        # Todo: check if needed
         # ========================
         seq = nn.Sequential(*layers)
         return seq

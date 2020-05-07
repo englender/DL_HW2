@@ -98,26 +98,19 @@ An equation: $e^{i\pi} -1 = 0$
 # Part 3 answers
 
 part3_q1 = r"""
-
-Explain the effect of depth on the accuracy. What depth produces the best results and why do you think that's the case?
-Were there values of L for which the network wasn't trainable? what causes this? Suggest two things which may be done to resolve it at least partially.
-
-
 **Your answer:
-1. We can see in our results that for 32 filters (K=32) we produce the best accuracy when the depth is 2, and the worst
-accuracy when the depth is 16. Similarly for 64 filters (K=64) we produce the best accuracy when the depth is 4, and
-the worst accuracy is when the depth is 16. Meaning for both filters we get better results from the lower depths rather
-than the higher depths. As we saw in the tutorial, adding depth can cause problems just like we experienced in our 
-results. A large depth can cause the gradient to vanish or explode on the back propagation by the time it reaches layers 
-close to the model input.
+1. We can see in our results that for 32 filters (K=32) we produce similar results for L=2,4 and for L=8,16 the network 
+isn't trainable. When we increase the filters to K=64, we get very similar results as for K=32. So we can conclude that 
+for the smaller depths, when the network is trainable, the different depths don't have a big affect on the accuracy. 
+For the parameters that we check in this experiment (i.e a low K) the complexity and diversity of the extracted features 
+are low. So for large depths the network is not trainable, and for the lower depths because the complexity and diversity 
+are low the differences between them are small. 
 
-2. Originally we ran the experiment and we found that for K=64, L=16 the network wasn't trainable. We suspected this was
-happening because the progression towards the gradient direction was too big, and always passed the minimum point. This
-assumption was verified when we decreased the learn rate by half and the loss started to decrease as well as the 
-accuracy improved. That being said, we still produced lesser results with L=16.
-
-
-
+2. We can see in our results that the network isn't trainable for L=8,16 for both K values that were checked. We assume 
+that this is caused by the vanishing gradient problem, because of the big depth of the network. This can be solved by 
+using Batch Normalization, which will normalize the gradient in each layer and help prevent it from vanishing. Another 
+solution to this problem is to add skip connections (like we will see in the next experiments), which will help the 
+gradient to flow back through the layers without vanishing.
 **
 
 
@@ -135,19 +128,16 @@ part3_q2 = r"""
 Analyze your results from experiment 1.2. In particular, compare to the results of experiment 1.1.
 
 **Your answer:
-In experiment 1.2 for L=2, we can see that the best results are produced for K=128, followed closely by K=64,256 which
-are very similar, and the lowest accuracy is when K=32. In experiment 1.1 we ran the same settings for K=32,64 and 
-as expected the accuracy percentage are the same in both experiments for these parameters. Following these results we 
-conclude that for L=2 the best number of filters is K=128, a setting that wasn't checked in experiment 1.1
-
-For L=4, we produce similar results as L=2, but we achieve a higher accuracy. The best results are produced for 
-K=128,256, followed by K=64 and the lowest accuracy is when K=32. Like with L=2, the accuracy percentage are the same 
-as in experiment 1.1 for K=32,64. 
-
-For L=8, we produce the best results for K=258, and as the K drops so does the accuracy.
-
-From experiments 1.1,1.2 we can conclude that there is a linear relation between the K and L, so as the L increases we
-produce better results for an increasing K.**
+In experiment 1.2 for L=2, we produce similar results for all the K values. This can be explained by the low depth of 
+the network which causes the feature extraction to be simpler and thus decreasing the affect of different K values.
+For L=4 we can see that when we increase the depth more complex features can be created and because of that we see 
+larger differences between the different K values. Our results show that for L=4 we achieve the est accuracy for K=256.
+For L=8, we start seeing that the network isn't trainable for some K values, which can be explained because the network
+is deep thus causing the gradiant to vanish as we explained before.  
+In conclusion, when using more filters more diverse features can be extracted, and by making the network deeper the 
+features can be more complex. As seen in our results for a low L value the network isn't deep enough to extract more 
+complex features derived by a large K value.
+.**
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -163,7 +153,13 @@ part3_q3 = r"""
 
 Analyze your results from experiment 1.3
 
-**Your answer:**
+**Your answer:
+This experiment is the first time we use several different convolutions for every layer (L). Also we can observe that in 
+this experiment we achieve our highest test accuracy. For every L value we have several convolutional layers, the first 
+one having K=64 and the next layers have increasing K values, enabling us to extract more complex features, and produce
+better results. However this structure deepens the network and we see the for our higher L values that we checked 
+(L=3,4) the network doesn't learn.
+**
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -176,7 +172,18 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part3_q4 = r"""
-**Your answer:**
+**Your answer:
+In this experiment we use the ResNet model as opposed to the previous experiments where we used the CNN model. 
+In the first part of the experiment we use a constant value of K=32 and depths varying from 8,16,32. When compared to 
+experiment 1.1 we can see a significant improvement, especially as the L values increase, where as in experiment 1.1 for
+the same L values the network wasn't trainable. 
+In the second part where we trained with different convulotional layers, we expirienced the same phenomenon. With our 
+ResNet model we achieved better results, and where able to train the network with large depths, as opposed to the CNN
+model that wasn't trainable with those depths.
+These results are consistent with our expectations, the ResNet model enables the gradient to propagate back from deeper
+layers and because of that we can build more complex features resulting in better results.
+  
+**
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -189,7 +196,18 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part3_q5 = r"""
-**Your answer:**
+**Your answer:
+1. In this part we added a couple of features to our model that we thought would improve some obstacles that we faced 
+in the previous experiments. A problem that we experienced and explained before is the vanishing gradient in large 
+depths. In order to overcome that we added Batch Normalization and skip connections (as explained in question 1.2).
+Because we wanted to train our model on larger depths, we decided to add dropout to avoid overfitting on our training 
+set as we learned from the tutorials. We experimented with several dropout values, and decided on a final value of
+dropout=0.2, which is smaller than the values used in part 2.
+
+2. As we expected these additions produced better results than in part 1. We achieved better generalization as
+well as higher accuracy. In part 1 we saw from both the CNN model and ResNet model some overfitting, that is reflected
+by the improvement of the train accuracy and decrease in the test accuracy. Moreover in part 2 we train the model with 
+large depths and still produce high accuracy, as opposed to part 1 where the models didn't train with these large depths.**
 
 
 Write your answer using **markdown** and $\LaTeX$:
